@@ -1,0 +1,36 @@
+﻿<Window x:Class="HaloMCCEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"  
+        xmlns:local="clr-namespace:HaloMCCEditor" xmlns:core="clr-namespace:HaloMCCEditor.Core"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="1080" Width="1920">
+
+    <DockPanel LastChildFill="True">
+        <StackPanel DockPanel.Dock="Top">
+            <WindowsFormsHost x:Name="TopHost" Height="50">
+            </WindowsFormsHost>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom">
+            <WindowsFormsHost x:Name="BottomHost" Height="50">
+                
+            </WindowsFormsHost>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Left">
+            <WindowsFormsHost x:Name="LeftHost" Width="50">
+            </WindowsFormsHost>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Right">
+            <WindowsFormsHost x:Name="RightHost" Width="50"></WindowsFormsHost>
+        </StackPanel>
+        <TabControl>
+            <TabItem Header="Viewport">
+                <WindowsFormsHost x:Name="Host">
+                    <core:ViewportHostControl></core:ViewportHostControl>
+                </WindowsFormsHost>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
