@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
@@ -10,14 +8,18 @@
 
 #include <optional>
 
-struct QueueFamilyIndices;
-struct SwapChainSupportDetails;
+#include "EditorVKCommon.h"
+#include "EditorVKSwapchain.h"
+#include "EditorVkGraphicsPipeline.h"
 
-class EditorVKContext {
+class EditorVKContext 
+{
 public:
 	explicit EditorVKContext(HWND hwnd, RECT rect);
 
 	void InitializeVulkan();
+	void InitializeSwapchain();
+	void InitializeGraphicsPipeline(const std::string& shaderLocation);
 	void Cleanup();
 
 private:
@@ -28,19 +30,9 @@ private:
 
 	void select_physical_device();
 	void create_logical_device();
-	void create_device_swapchain();
-	void create_image_views();
-
-	VkSurfaceFormatKHR select_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR select_swap_present_mode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-	VkExtent2D select_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities);
-
 
 	bool check_validation_layers();
 	bool check_valid_device(VkPhysicalDevice device);
-
-	QueueFamilyIndices find_queue_families(VkPhysicalDevice device);
-	SwapChainSupportDetails query_swapchain_support(VkPhysicalDevice device);
 
 	void populate_debug_messenger_struct(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
@@ -55,16 +47,13 @@ private:
 	VkSurfaceKHR surface;
 	VkSwapchainKHR swapChain;
 
-	VkFormat swapChainImageFormat;
-	VkExtent2D swapChainExtent;
-
-	std::vector<VkImage> swapChainImages;
-	std::vector<VkImageView> swapChainImageViews;
-
 	VkDebugUtilsMessengerEXT debugMessenger;
 
 	HWND windowHandle;
 	RECT clientRect;
+
+	std::unique_ptr<EditorVKSwapchain> swapChainPtr;
+	std::unique_ptr<EditorVKGraphicsPipeline> graphicsPipeline;
 };
 
 extern std::shared_ptr<EditorVKContext> vkCtx;

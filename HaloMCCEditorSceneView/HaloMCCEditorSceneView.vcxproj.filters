@@ -27,19 +27,40 @@
     <ClCompile Include="vulkan_setup_impl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vulkan_swapchain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan_shaders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vulkan_graphics_pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EditorVKContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ApiDef.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Common.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="include\ApiDef.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Common.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorVKSwapchain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VkShaderProgram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorVKCommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorVkGraphicsPipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorVKUtils.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

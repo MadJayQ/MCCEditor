@@ -6,6 +6,7 @@
 
 
 
+static std::string ShaderSourceLocation = "";
 
 
 int InitializeRendererFromWindow(HWND targetWnd, RECT rect)
@@ -24,6 +25,8 @@ int InitializeRendererFromWindow(HWND targetWnd, RECT rect)
 	{
 		std::cout << "Initializing Vulkan Renderer" << std::endl;
 		vkCtx->InitializeVulkan();
+		vkCtx->InitializeSwapchain();
+		vkCtx->InitializeGraphicsPipeline(ShaderSourceLocation);
 	}
 	catch (const std::exception& ex)
 	{
@@ -37,4 +40,9 @@ int InitializeRendererFromWindow(HWND targetWnd, RECT rect)
 void Shutdown()
 {
 	vkCtx.reset();
+}
+
+SCENEVIEW_API void SetShaderLocation(const std::string& shaderLocation)
+{
+	ShaderSourceLocation = shaderLocation;
 }
