@@ -73,7 +73,8 @@ void EditorVKContext::InitializeSwapchain()
 void EditorVKContext::InitializeGraphicsPipeline(const std::string& shaderLocation)
 {
 	graphicsPipeline = std::make_unique<EditorVKGraphicsPipeline>();
-	graphicsPipeline->CreateGraphicsPipeline(logicalDevice, shaderLocation);
+	graphicsPipeline->CreateRenderPass(logicalDevice, swapChainPtr->FramebufferFromat());
+	graphicsPipeline->CreateGraphicsPipeline(logicalDevice, swapChainPtr.get(), shaderLocation);
 }
 
 void EditorVKContext::Cleanup()

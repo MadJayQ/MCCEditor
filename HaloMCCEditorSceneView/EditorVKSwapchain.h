@@ -15,6 +15,11 @@ public:
 	bool DeviceHasValidSwapchain(VkPhysicalDevice device, VkSurfaceKHR surface);
 
 	void SetClientRect(RECT rect) { clientRect = rect; }
+	RECT GetClientRect() const { return clientRect; }
+
+	VkExtent2D Extent() const { return swapChainExtent; }
+	VkFormat FramebufferFromat() const { return swapChainImageFormat; }
+
 private:
 
 	void create_image_views(VkDevice logicalDevice);
