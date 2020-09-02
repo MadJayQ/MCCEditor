@@ -7,6 +7,7 @@
 
 #include <algorithm>
 
+#include "EditorVkGraphicsPipeline.h"
 #include "EditorVKUtils.hpp"
 
 
@@ -72,6 +73,10 @@ void EditorVKSwapchain::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevic
 
 void EditorVKSwapchain::Cleanup(VkPhysicalDevice device, VkDevice logicalDevice)
 {
+	for (VkFramebuffer framebuffer : swapChainFramebuffers)
+	{
+		vkDestroyFramebuffer(logicalDevice, framebuffer, nullptr);
+	}
 	for (VkImageView imageView : swapChainImageViews)
 	{
 		vkDestroyImageView(logicalDevice, imageView, nullptr);
@@ -84,6 +89,43 @@ bool EditorVKSwapchain::DeviceHasValidSwapchain(VkPhysicalDevice device, VkSurfa
 	SwapChainSupportDetails swapChainSupport = utils_QuerySwapChainSupport(device, surface);
 	
 	return !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+}
+
+void EditorVKSwapchain::CreateFramebuffers(VkDevice device, EditorVKGraphicsPipeline* pipeline)
+{
+	swapChainFramebuffers.reserve(swapChainImageViews.size());
+	for (size_t i = 0; i < swapChainImageViews.size(); i++)
+	{
+		VkImageView attachments[] = 
+		{
+			swapChainImageViews[i]
+		};
+
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = pipeline->GetRenderPassSetup();
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.width = swapChainExtent.width;
+		framebufferInfo.height = swapChainExtent.height;
+		framebufferInfo.layers = 1;
+
+		VkResult result = vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]);
+		if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create framebuffer!");
+		}
+	}
+}
+
+VkFramebuffer EditorVKSwapchain::GetFramebuffer(int index)
+{
+	if (index >= swapChainFramebuffers.size())
+	{
+		throw std::runtime_error("Attempting to index an invalid framebuffer");
+	}
+
+	return swapChainFramebuffers[i];
 }
 
 void EditorVKSwapchain::create_image_views(VkDevice logicalDevice)

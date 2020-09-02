@@ -13,7 +13,7 @@ const std::string DEFAULT_FRAG_SHADER_NAME = "DEFAULT-FRAGMENT-SHADER";
 void EditorVKGraphicsPipeline::CreateGraphicsPipeline(VkDevice logicalDevice, EditorVKSwapchain* swapchain, const std::string& shaderLocation)
 {
 	defaultVertexShader = std::make_unique<VkShaderProgram>(DEFAULT_VERT_SHADER_NAME, ShaderType::VK_VERTEX_SHADER);
-	defaultFragmentShader = std::make_unique<VkShaderProgram>(DEFAULT_FRAG_SHADER_NAME, ShaderType::VK_VERTEX_SHADER);
+	defaultFragmentShader = std::make_unique<VkShaderProgram>(DEFAULT_FRAG_SHADER_NAME, ShaderType::VK_FRAGMENT_SHADER);
 
 
 	std::string vertexPath = shaderLocation + "/" + DEFAULT_VERT_SHADER_FILE;
@@ -146,7 +146,9 @@ void EditorVKGraphicsPipeline::CreateGraphicsPipeline(VkDevice logicalDevice, Ed
 	pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineCreateInfo.basePipelineIndex = -1;
 
-	result = vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &graphicsPipeline);
+	VkGraphicsPipelineCreateInfo* infoPtr = &pipelineCreateInfo;
+
+	result = vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, infoPtr, nullptr, &graphicsPipeline);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to create graphics pipeline!");
@@ -193,4 +195,27 @@ void EditorVKGraphicsPipeline::Cleanup(VkDevice device)
 {
 	vkDestroyPipelineLayout(device, graphicsPipelineLayout, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
+}
+
+void EditorVKGraphicsPipeline::BeginFrame(VkCommandBuffer commandBuffer, VkFramebuffer targetFramebuffer, VkExtent2D renderExtent)
+{
+	VkRenderPassBeginInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = renderPass;
+	renderPassInfo.framebuffer = targetFramebuffer;
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = renderExtent;
+
+	VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+}
+
+void EditorVKGraphicsPipeline::EndFrame(VkCommandBuffer commandBuffer)
+{
+	vkCmdEndRenderPass(commandBuffer);
 }

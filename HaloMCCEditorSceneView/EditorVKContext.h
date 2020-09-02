@@ -22,6 +22,9 @@ public:
 	void InitializeGraphicsPipeline(const std::string& shaderLocation);
 	void Cleanup();
 
+	void BeginFrame();
+	void EndFrame();
+
 private:
 	void create_vulkan_instance();
 	void create_vulkan_surface();
@@ -30,6 +33,8 @@ private:
 
 	void select_physical_device();
 	void create_logical_device();
+
+	void create_command_pool();
 
 	bool check_validation_layers();
 	bool check_valid_device(VkPhysicalDevice device);
@@ -43,6 +48,8 @@ private:
 
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
+	VkCommandPool commandPool;
+	std::vector<VkCommandBuffer> commandBuffers;
 
 	VkSurfaceKHR surface;
 	VkSwapchainKHR swapChain;

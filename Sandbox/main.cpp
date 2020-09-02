@@ -27,8 +27,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (sandboxWND == NULL)
         return 2;
 
+    RECT clientRect;
+    GetClientRect(sandboxWND, &clientRect);
+
     SetShaderLocation("C:\\Users\\NASCARAdmin\\Documents\\GitHub\\MCCEditor\\HaloMCCEditorSceneView\\shaders");
-    InitializeRendererFromWindow(sandboxWND, RECT{ 0, 0, 0, 0 });
+    InitializeRendererFromWindow(sandboxWND, clientRect);
     Shutdown();
 
     while (GetMessage(&msg, NULL, 0, 0) > 0)

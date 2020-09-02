@@ -75,6 +75,12 @@ void EditorVKContext::InitializeGraphicsPipeline(const std::string& shaderLocati
 	graphicsPipeline = std::make_unique<EditorVKGraphicsPipeline>();
 	graphicsPipeline->CreateRenderPass(logicalDevice, swapChainPtr->FramebufferFromat());
 	graphicsPipeline->CreateGraphicsPipeline(logicalDevice, swapChainPtr.get(), shaderLocation);
+
+	swapChainPtr->CreateFramebuffers(logicalDevice, graphicsPipeline.get());
+
+	create_command_pool();
+
+	
 }
 
 void EditorVKContext::Cleanup()
@@ -84,12 +90,51 @@ void EditorVKContext::Cleanup()
 		DestroyDebugUtilsMessengerEXT(vulkanInstance, debugMessenger, nullptr);
 	}
 
+	graphicsPipeline->Cleanup(logicalDevice);
+	graphicsPipeline.reset();
+
 	swapChainPtr->Cleanup(physicalDevice, logicalDevice);
 	swapChainPtr.reset();
+
+	vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
 
 	vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
 	vkDestroyInstance(vulkanInstance, nullptr);
 	vkDestroyDevice(logicalDevice, nullptr);
+}
+
+void EditorVKContext::BeginFrame()
+{
+	VkResult result = VK_SUCCESS;
+	for (size_t i = 0; i < commandBuffers.size(); i++)
+	{
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = 0; // Optional
+		beginInfo.pInheritanceInfo = nullptr; // Optional
+
+		VkCommandBuffer commandBuffer = commandBuffers[i];
+
+		result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to begin recording command buffer!");
+		}
+
+		VkFramebuffer targetFramebuffer = swapChainPtr->GetFramebuffer(i);
+
+		graphicsPipeline->BeginFrame(commandBuffer, targetFramebuffer, swapChainPtr->Extent());
+
+		result = vkEndCommandBuffer(commandBuffer);
+		if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to record command buffer!");
+		}
+	}
+}
+
+void EditorVKContext::EndFrame()
+{
 }
 
 void EditorVKContext::create_vulkan_instance()
@@ -198,6 +243,36 @@ void EditorVKContext::create_logical_device()
 
 	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
+}
+
+void EditorVKContext::create_command_pool()
+{
+	QueueFamilyIndices queueFamilyIndices = utils_QueryQueueFamilies(physicalDevice, surface);
+
+	VkCommandPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+	poolInfo.flags = 0; // Optional
+
+	VkResult result = vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &commandPool);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to create command pool!");
+	}
+	//Create comand buffers
+	commandBuffers.resize(swapChainPtr->GetFramebufferCount());
+
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = commandPool;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+
+	result = vkAllocateCommandBuffers(logicalDevice, &allocInfo, commandBuffers.data());
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to allocate command buffers!");
+	}
 }
 
 

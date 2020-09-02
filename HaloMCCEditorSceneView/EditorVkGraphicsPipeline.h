@@ -15,7 +15,15 @@ public:
 	void CreateGraphicsPipeline(VkDevice logicalDevice, EditorVKSwapchain* swapchain, const std::string& shaderLocation);
 	void CreateRenderPass(VkDevice logicalDevice, VkFormat framebufferFormat);
 
+	VkRenderPass GetRenderPassSetup() const { return renderPass; }
+	VkPipeline GetGraphicsPipeline() const { return graphicsPipeline; }
+	VkPipelineLayout GetGraphicsPipelineLayout() const { return graphicsPipelineLayout; }
+
 	void Cleanup(VkDevice logicalDevice);
+
+	void BeginFrame(VkCommandBuffer commandBuffer, VkFramebuffer targetFramebuffer, VkExtent2D renderExtent);
+	void EndFrame(VkCommandBuffer commandBuffer);
+
 
 public:
 	VkRenderPass renderPass;

@@ -30,7 +30,7 @@ VkPipelineShaderStageCreateInfo VkShaderProgram::GenerateStageCreationInfo()
 	createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	createInfo.stage = utils_DetermineShaderStageBitFlags(shaderType);
 	createInfo.module = shaderModule;
-	createInfo.pName = shaderName.c_str();
+	createInfo.pName = "main";
 
 	return createInfo;
 }

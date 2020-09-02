@@ -3,6 +3,7 @@
 #include "EditorVKCommon.h"
 
 
+class EditorVKGraphicsPipeline;
 
 class EditorVKSwapchain
 {
@@ -19,6 +20,10 @@ public:
 
 	VkExtent2D Extent() const { return swapChainExtent; }
 	VkFormat FramebufferFromat() const { return swapChainImageFormat; }
+
+	void CreateFramebuffers(VkDevice device, EditorVKGraphicsPipeline* pipeline);
+	VkFramebuffer GetFramebuffer(int index);
+	int GetFramebufferCount() const { return swapChainFramebuffers.size(); }
 
 private:
 
@@ -37,6 +42,8 @@ private:
 
 	std::vector<VkImage> swapChainImages;
 	std::vector<VkImageView> swapChainImageViews;
+
+	std::vector<VkFramebuffer> swapChainFramebuffers;
 
 	RECT clientRect;
 
