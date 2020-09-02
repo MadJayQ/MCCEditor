@@ -30,6 +30,7 @@ static SwapChainSupportDetails utils_QuerySwapChainSupport(VkPhysicalDevice devi
 	uint32_t formatCount = 0;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
+	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
 	if (formatCount != 0)
 	{
 		details.formats.resize(formatCount);
@@ -40,6 +41,7 @@ static SwapChainSupportDetails utils_QuerySwapChainSupport(VkPhysicalDevice devi
 	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
 	if (presentModeCount != 0)
 	{
+		details.presentModes.resize(presentModeCount);
 		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
 	}
 
