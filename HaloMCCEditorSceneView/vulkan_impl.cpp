@@ -48,7 +48,7 @@ static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMesse
 
 
 EditorVKContext::EditorVKContext(HWND hwnd, RECT rect)
-	: windowHandle(hwnd), clientRect(rect), vulkanInstance(VK_NULL_HANDLE), physicalDevice(VK_NULL_HANDLE)
+	: windowHandle(hwnd), clientRect(rect), vulkanInstance(VK_NULL_HANDLE), physicalDevice(VK_NULL_HANDLE), logicalDevice(VK_NULL_HANDLE)
 {}
 
 void EditorVKContext::InitializeVulkan()
@@ -61,6 +61,9 @@ void EditorVKContext::InitializeVulkan()
 
 	select_physical_device();
 	create_logical_device();
+
+	synchronization = std::make_unique<EditorVKSynchronization>();
+	synchronization->CreateSemaphores(logicalDevice);
 }
 
 void EditorVKContext::InitializeSwapchain()
@@ -96,6 +99,9 @@ void EditorVKContext::Cleanup()
 	swapChainPtr->Cleanup(physicalDevice, logicalDevice);
 	swapChainPtr.reset();
 
+	synchronization->Cleanup(logicalDevice);
+	synchronization.reset();
+
 	vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
 
 	vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
@@ -124,6 +130,7 @@ void EditorVKContext::BeginFrame()
 		VkFramebuffer targetFramebuffer = swapChainPtr->GetFramebuffer(i);
 
 		graphicsPipeline->BeginFrame(commandBuffer, targetFramebuffer, swapChainPtr->Extent());
+		graphicsPipeline->EndFrame(commandBuffer);
 
 		result = vkEndCommandBuffer(commandBuffer);
 		if (result != VK_SUCCESS)
@@ -135,6 +142,36 @@ void EditorVKContext::BeginFrame()
 
 void EditorVKContext::EndFrame()
 {
+	SubmitAndFlip();
+}
+
+void EditorVKContext::SubmitAndFlip()
+{
+
+	uint32_t nextImageIndex = swapChainPtr->AquireImage(logicalDevice, synchronization.get());
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore signalSemaphore = synchronization->GetRenderFinishedSemaphore();
+	VkSemaphore waitSemaphore = synchronization->GetImageAvailableSemaphore();
+
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &waitSemaphore;
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[nextImageIndex];
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = &signalSemaphore;
+
+	VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to submit command buffer!");
+	}
+
+	swapChainPtr->Present(presentQueue, synchronization.get(), nextImageIndex);
 }
 
 void EditorVKContext::create_vulkan_instance()
@@ -252,7 +289,7 @@ void EditorVKContext::create_command_pool()
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-	poolInfo.flags = 0; // Optional
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	VkResult result = vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &commandPool);
 	if (result != VK_SUCCESS)

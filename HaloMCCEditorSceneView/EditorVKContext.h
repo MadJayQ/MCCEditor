@@ -11,6 +11,7 @@
 #include "EditorVKCommon.h"
 #include "EditorVKSwapchain.h"
 #include "EditorVkGraphicsPipeline.h"
+#include "EditorVKSynchronization.h"
 
 class EditorVKContext 
 {
@@ -24,6 +25,7 @@ public:
 
 	void BeginFrame();
 	void EndFrame();
+	void SubmitAndFlip();
 
 private:
 	void create_vulkan_instance();
@@ -61,6 +63,7 @@ private:
 
 	std::unique_ptr<EditorVKSwapchain> swapChainPtr;
 	std::unique_ptr<EditorVKGraphicsPipeline> graphicsPipeline;
+	std::unique_ptr<EditorVKSynchronization> synchronization;
 };
 
 extern std::shared_ptr<EditorVKContext> vkCtx;

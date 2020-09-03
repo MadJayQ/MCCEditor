@@ -4,6 +4,7 @@
 
 
 class EditorVKGraphicsPipeline;
+class EditorVKSynchronization;
 
 class EditorVKSwapchain
 {
@@ -24,6 +25,11 @@ public:
 	void CreateFramebuffers(VkDevice device, EditorVKGraphicsPipeline* pipeline);
 	VkFramebuffer GetFramebuffer(int index);
 	int GetFramebufferCount() const { return swapChainFramebuffers.size(); }
+	
+
+	uint32_t AquireImage(VkDevice logicalDevice, EditorVKSynchronization* synchronizer);
+
+	void Present(VkQueue presentQueue, EditorVKSynchronization* synchronizer, uint32_t imageIdx);
 
 private:
 

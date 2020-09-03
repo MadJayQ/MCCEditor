@@ -11,3 +11,6 @@
 extern "C" SCENEVIEW_API int InitializeRendererFromWindow(HWND targetWnd, RECT rect);
 extern "C" SCENEVIEW_API void Shutdown();
 extern "C" SCENEVIEW_API void SetShaderLocation(const std::string & shaderLocation);
+
+extern "C" SCENEVIEW_API void BeginFrame();
+extern "C" SCENEVIEW_API void EndFrame();

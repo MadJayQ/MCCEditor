@@ -39,10 +39,21 @@ int InitializeRendererFromWindow(HWND targetWnd, RECT rect)
 
 void Shutdown()
 {
+	vkCtx->Cleanup();
 	vkCtx.reset();
 }
 
 SCENEVIEW_API void SetShaderLocation(const std::string& shaderLocation)
 {
 	ShaderSourceLocation = shaderLocation;
+}
+
+SCENEVIEW_API void BeginFrame()
+{
+	vkCtx->BeginFrame();
+}
+
+SCENEVIEW_API void EndFrame()
+{
+	vkCtx->EndFrame();
 }

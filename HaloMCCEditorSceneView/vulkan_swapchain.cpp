@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "EditorVkGraphicsPipeline.h"
+#include "EditorVKSynchronization.h"
 #include "EditorVKUtils.hpp"
 
 
@@ -69,6 +70,8 @@ void EditorVKSwapchain::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevic
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = swapExtents;
+
+	create_image_views(logicalDevice);
 }
 
 void EditorVKSwapchain::Cleanup(VkPhysicalDevice device, VkDevice logicalDevice)
@@ -93,7 +96,7 @@ bool EditorVKSwapchain::DeviceHasValidSwapchain(VkPhysicalDevice device, VkSurfa
 
 void EditorVKSwapchain::CreateFramebuffers(VkDevice device, EditorVKGraphicsPipeline* pipeline)
 {
-	swapChainFramebuffers.reserve(swapChainImageViews.size());
+	swapChainFramebuffers.resize(swapChainImageViews.size());
 	for (size_t i = 0; i < swapChainImageViews.size(); i++)
 	{
 		VkImageView attachments[] = 
@@ -125,7 +128,48 @@ VkFramebuffer EditorVKSwapchain::GetFramebuffer(int index)
 		throw std::runtime_error("Attempting to index an invalid framebuffer");
 	}
 
-	return swapChainFramebuffers[i];
+	return swapChainFramebuffers[index];
+}
+
+uint32_t EditorVKSwapchain::AquireImage(VkDevice logicalDevice, EditorVKSynchronization* synchronizer)
+{
+	uint32_t nextImageIndex = synchronizer->AquireSwapchainImage(logicalDevice, swapChain);
+	if (nextImageIndex == -1 || nextImageIndex >= swapChainImages.size())
+	{
+		throw std::runtime_error("Attempted to aquire an invalid image from the swap chain!");
+	}
+
+	return nextImageIndex;
+}
+
+void EditorVKSwapchain::Present(VkQueue presentQueue, EditorVKSynchronization* synchronizer, uint32_t imageIdx)
+{
+	VkSemaphore signalSemaphore = synchronizer->GetRenderFinishedSemaphore();
+	//VkSemaphore waitSemaphore = synchronizer->GetImageAvailableSemaphore();
+
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = &signalSemaphore;
+
+	VkSwapchainKHR swapChains[] = { swapChain };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+	presentInfo.pImageIndices = &imageIdx;
+	presentInfo.pResults = nullptr; // Optional
+
+	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to present swapchain!");
+	}
+
+	result = vkQueueWaitIdle(presentQueue);
+	if (result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to wait for present queue!");
+	}
 }
 
 void EditorVKSwapchain::create_image_views(VkDevice logicalDevice)
