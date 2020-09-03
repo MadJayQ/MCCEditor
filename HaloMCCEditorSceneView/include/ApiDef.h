@@ -14,3 +14,5 @@ extern "C" SCENEVIEW_API void SetShaderLocation(const std::string & shaderLocati
 
 extern "C" SCENEVIEW_API void BeginFrame();
 extern "C" SCENEVIEW_API void EndFrame();
+
+extern "C" SCENEVIEW_API void ResizeClientWindow(RECT newRect);

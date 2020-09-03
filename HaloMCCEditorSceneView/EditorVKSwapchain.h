@@ -30,6 +30,7 @@ public:
 	uint32_t AquireImage(VkDevice logicalDevice, EditorVKSynchronization* synchronizer);
 
 	void Present(VkQueue presentQueue, EditorVKSynchronization* synchronizer, uint32_t imageIdx);
+	bool Valid() const { return swapchainInvalid; }
 
 private:
 
@@ -50,6 +51,8 @@ private:
 	std::vector<VkImageView> swapChainImageViews;
 
 	std::vector<VkFramebuffer> swapChainFramebuffers;
+
+	bool swapchainInvalid;
 
 	RECT clientRect;
 

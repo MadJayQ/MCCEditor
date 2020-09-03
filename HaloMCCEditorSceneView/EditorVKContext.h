@@ -20,12 +20,17 @@ public:
 
 	void InitializeVulkan();
 	void InitializeSwapchain();
-	void InitializeGraphicsPipeline(const std::string& shaderLocation);
+	void InitializeGraphicsPipeline();
 	void Cleanup();
 
 	void BeginFrame();
 	void EndFrame();
 	void SubmitAndFlip();
+
+	void OnWindowResize(RECT newClientSize);
+	void RecreateResources();
+
+	void SetShaderDirectory(const std::string& directory);
 
 private:
 	void create_vulkan_instance();
@@ -37,9 +42,12 @@ private:
 	void create_logical_device();
 
 	void create_command_pool();
+	void create_synchronization_objects();
 
 	bool check_validation_layers();
 	bool check_valid_device(VkPhysicalDevice device);
+
+	void destroy_command_pool();
 
 	void populate_debug_messenger_struct(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
@@ -64,6 +72,8 @@ private:
 	std::unique_ptr<EditorVKSwapchain> swapChainPtr;
 	std::unique_ptr<EditorVKGraphicsPipeline> graphicsPipeline;
 	std::unique_ptr<EditorVKSynchronization> synchronization;
+
+	bool contextValid;
 };
 
 extern std::shared_ptr<EditorVKContext> vkCtx;

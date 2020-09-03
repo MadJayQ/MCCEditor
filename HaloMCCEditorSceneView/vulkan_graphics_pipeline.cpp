@@ -193,6 +193,13 @@ void EditorVKGraphicsPipeline::CreateRenderPass(VkDevice logicalDevice, VkFormat
 
 void EditorVKGraphicsPipeline::Cleanup(VkDevice device)
 {
+
+	defaultVertexShader->Cleanup(device);
+	defaultVertexShader.reset();
+	defaultFragmentShader->Cleanup(device);
+	defaultFragmentShader.reset();
+
+	vkDestroyPipeline(device, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device, graphicsPipelineLayout, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
 }

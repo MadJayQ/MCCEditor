@@ -24,6 +24,8 @@ const std::vector<const char*> deviceExtensions =
 };
 
 
+static std::string shaderDirectory = "";
+
 
 std::shared_ptr<EditorVKContext> vkCtx;
 
@@ -61,9 +63,6 @@ void EditorVKContext::InitializeVulkan()
 
 	select_physical_device();
 	create_logical_device();
-
-	synchronization = std::make_unique<EditorVKSynchronization>();
-	synchronization->CreateSemaphores(logicalDevice);
 }
 
 void EditorVKContext::InitializeSwapchain()
@@ -73,25 +72,25 @@ void EditorVKContext::InitializeSwapchain()
 	swapChainPtr->CreateSwapchain(physicalDevice, logicalDevice, surface);
 }
 
-void EditorVKContext::InitializeGraphicsPipeline(const std::string& shaderLocation)
+void EditorVKContext::InitializeGraphicsPipeline()
 {
 	graphicsPipeline = std::make_unique<EditorVKGraphicsPipeline>();
 	graphicsPipeline->CreateRenderPass(logicalDevice, swapChainPtr->FramebufferFromat());
-	graphicsPipeline->CreateGraphicsPipeline(logicalDevice, swapChainPtr.get(), shaderLocation);
+	graphicsPipeline->CreateGraphicsPipeline(logicalDevice, swapChainPtr.get(), shaderDirectory);
 
 	swapChainPtr->CreateFramebuffers(logicalDevice, graphicsPipeline.get());
 
 	create_command_pool();
+	create_synchronization_objects();
 
+	contextValid = true;
 	
 }
 
 void EditorVKContext::Cleanup()
 {
-	if (enableValidationLayers)
-	{
-		DestroyDebugUtilsMessengerEXT(vulkanInstance, debugMessenger, nullptr);
-	}
+
+	vkDeviceWaitIdle(logicalDevice);
 
 	graphicsPipeline->Cleanup(logicalDevice);
 	graphicsPipeline.reset();
@@ -102,15 +101,29 @@ void EditorVKContext::Cleanup()
 	synchronization->Cleanup(logicalDevice);
 	synchronization.reset();
 
-	vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
+	destroy_command_pool();
+
+	vkDestroyDevice(logicalDevice, nullptr);
+
+	if (enableValidationLayers)
+	{
+		DestroyDebugUtilsMessengerEXT(vulkanInstance, debugMessenger, nullptr);
+	}
 
 	vkDestroySurfaceKHR(vulkanInstance, surface, nullptr);
 	vkDestroyInstance(vulkanInstance, nullptr);
-	vkDestroyDevice(logicalDevice, nullptr);
 }
 
 void EditorVKContext::BeginFrame()
 {
+
+	if (!contextValid || !swapChainPtr->Valid())
+	{
+		vkDeviceWaitIdle(logicalDevice);
+		RecreateResources();
+	}
+
+	synchronization->WaitOnCPUSynchronization(logicalDevice);
 	VkResult result = VK_SUCCESS;
 	for (size_t i = 0; i < commandBuffers.size(); i++)
 	{
@@ -143,12 +156,14 @@ void EditorVKContext::BeginFrame()
 void EditorVKContext::EndFrame()
 {
 	SubmitAndFlip();
+	synchronization->IncrementCPUFrame();
 }
 
 void EditorVKContext::SubmitAndFlip()
 {
 
 	uint32_t nextImageIndex = swapChainPtr->AquireImage(logicalDevice, synchronization.get());
+	synchronization->SynchronizeFramebuffer(logicalDevice, nextImageIndex);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -165,13 +180,38 @@ void EditorVKContext::SubmitAndFlip()
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &signalSemaphore;
 
-	VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	VkFence cpuSyncFence = synchronization->GetCPUSynchronizationFence(logicalDevice);
+
+	VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, cpuSyncFence);
 	if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to submit command buffer!");
 	}
 
 	swapChainPtr->Present(presentQueue, synchronization.get(), nextImageIndex);
+}
+
+void EditorVKContext::OnWindowResize(RECT newClientSize)
+{
+	clientRect = newClientSize;
+	contextValid = false;
+}
+
+void EditorVKContext::RecreateResources()
+{
+	destroy_command_pool();
+
+	swapChainPtr->Cleanup(physicalDevice, logicalDevice);
+	graphicsPipeline->Cleanup(logicalDevice);
+	synchronization->Cleanup(logicalDevice);
+
+	InitializeSwapchain();
+	InitializeGraphicsPipeline();
+}
+
+void EditorVKContext::SetShaderDirectory(const std::string& directory)
+{
+	shaderDirectory = directory;
 }
 
 void EditorVKContext::create_vulkan_instance()
@@ -280,6 +320,12 @@ void EditorVKContext::create_logical_device()
 
 	vkGetDeviceQueue(logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
+}
+
+void EditorVKContext::create_synchronization_objects()
+{
+	synchronization = std::make_unique<EditorVKSynchronization>();
+	synchronization->CreateSynchronizationObjects(logicalDevice, swapChainPtr->GetFramebufferCount());
 }
 
 void EditorVKContext::create_command_pool()
@@ -414,6 +460,12 @@ bool EditorVKContext::check_valid_device(VkPhysicalDevice device)
 	}
 
 	return indices.isValid() && extensionsSupported && validSwapChain;
+}
+
+void EditorVKContext::destroy_command_pool()
+{
+	vkFreeCommandBuffers(logicalDevice, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+	vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
 }
 
 

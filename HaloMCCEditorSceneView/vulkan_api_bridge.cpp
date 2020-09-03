@@ -24,9 +24,10 @@ int InitializeRendererFromWindow(HWND targetWnd, RECT rect)
 	try
 	{
 		std::cout << "Initializing Vulkan Renderer" << std::endl;
+		vkCtx->SetShaderDirectory(ShaderSourceLocation); //This can be handled in a better way
 		vkCtx->InitializeVulkan();
 		vkCtx->InitializeSwapchain();
-		vkCtx->InitializeGraphicsPipeline(ShaderSourceLocation);
+		vkCtx->InitializeGraphicsPipeline();
 	}
 	catch (const std::exception& ex)
 	{
@@ -56,4 +57,9 @@ SCENEVIEW_API void BeginFrame()
 SCENEVIEW_API void EndFrame()
 {
 	vkCtx->EndFrame();
+}
+
+SCENEVIEW_API void ResizeClientWindow(RECT newRectSize)
+{
+	vkCtx->OnWindowResize(newRectSize);
 }

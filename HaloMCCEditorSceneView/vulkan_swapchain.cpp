@@ -145,7 +145,6 @@ uint32_t EditorVKSwapchain::AquireImage(VkDevice logicalDevice, EditorVKSynchron
 void EditorVKSwapchain::Present(VkQueue presentQueue, EditorVKSynchronization* synchronizer, uint32_t imageIdx)
 {
 	VkSemaphore signalSemaphore = synchronizer->GetRenderFinishedSemaphore();
-	//VkSemaphore waitSemaphore = synchronizer->GetImageAvailableSemaphore();
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -160,15 +159,13 @@ void EditorVKSwapchain::Present(VkQueue presentQueue, EditorVKSynchronization* s
 	presentInfo.pResults = nullptr; // Optional
 
 	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
-	if (result != VK_SUCCESS)
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+	{
+		swapchainInvalid = true;
+	}
+	else if (result != VK_SUCCESS)
 	{
 		throw std::runtime_error("Failed to present swapchain!");
-	}
-
-	result = vkQueueWaitIdle(presentQueue);
-	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to wait for present queue!");
 	}
 }
 
