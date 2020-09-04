@@ -59,7 +59,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\bin\x64\Debug\</OutputPath>
-	<IntermediateOutputPath>..\obj\x64\Debug\</IntermediateOutputPath>
+    <IntermediateOutputPath>..\obj\x64\Debug\</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -143,6 +143,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Source\Blam\BlamCacheFile.cs" />
     <Compile Include="Source\EditorBrowser.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -153,6 +154,7 @@
     <Compile Include="Source\Rendering\INativePlatformRenderer.cs" />
     <Compile Include="Source\Rendering\OpenGLNativeRenderer.cs" />
     <Compile Include="Source\Rendering\RenderAPIImpl.cs" />
+    <Compile Include="Source\UnitTests\EditorUnitTests.cs" />
     <Compile Include="Source\ViewportHostControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -214,6 +216,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Blamite\Blamite.csproj">
+      <Project>{6b105ab9-84a0-4774-b319-75e9cab3db4b}</Project>
+      <Name>Blamite</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
