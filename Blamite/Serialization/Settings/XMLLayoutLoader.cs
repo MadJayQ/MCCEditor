@@ -72,6 +72,7 @@ namespace Blamite.Serialization.Settings
 		/// <returns>The layouts that were loaded.</returns>
 		private StructureLayoutCollection LoadLayoutsFromDirectory(string dirPath)
 		{
+			string debug = Directory.GetCurrentDirectory();
 			var result = new StructureLayoutCollection();
 			foreach (string file in Directory.EnumerateFiles(dirPath, "*.xml"))
 			{

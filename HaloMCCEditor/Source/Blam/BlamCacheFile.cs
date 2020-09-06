@@ -1,5 +1,6 @@
 ﻿using Blamite.Blam;
 using Blamite.Blam.ThirdGen;
+using Blamite.Blam.ThirdGen.Structures;
 using Blamite.IO;
 using Blamite.Serialization;
 using Blamite.Serialization.Settings;
@@ -30,8 +31,28 @@ namespace HaloMCCEditor.Core.Blam
         private CacheFileVersionInfo cacheFileVersion;
         private EngineDescription buildInfo;
 
+        //MonkaS
+        public ThirdGenHeader ThirdGenCacheFileHeader { get { return (internalCacheFile as ThirdGenCacheFile).FullHeader; } }
+
         public ICacheFile Get() { return internalCacheFile; }
         private ICacheFile internalCacheFile;
+
+
+        public long ExpandPointer(uint addr)
+        {
+            return internalCacheFile.PointerExpander.Expand(addr);
+        }
+
+        public long PointerToFileOffset(uint addr)
+        {
+            long expandedAddr = internalCacheFile.PointerExpander.Expand((uint)addr);
+            return internalCacheFile.MetaArea.PointerToOffset(expandedAddr);
+        }
+
+        public StructureLayout GetLayout(string layout)
+        {
+            return BuildInfo.Layouts.GetLayout(layout);
+        }
 
         public BlamCacheFile(string filePath)
         {

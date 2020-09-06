@@ -15,7 +15,7 @@ namespace Blamite.Blam.SecondGen
 			get { return false; }
 		}
 
-		public IRenderModel LoadRenderModelMeta(ITag modeTag, IReader reader)
+		public IRenderModel LoadRenderModelMeta(ITag modeTag, IReader reader, ICacheFile cacheFile)
 		{
 			throw new NotImplementedException();
 		}

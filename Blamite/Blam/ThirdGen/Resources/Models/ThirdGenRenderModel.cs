@@ -8,9 +8,10 @@ namespace Blamite.Blam.ThirdGen.Resources.Models
 {
 	public class ThirdGenRenderModel : IRenderModel
 	{
-		public ThirdGenRenderModel(StructureValueCollection values, IReader reader, FileSegmentGroup metaArea,
+		public ThirdGenRenderModel(StructureValueCollection values, IReader reader, ICacheFile cacheFile, FileSegmentGroup metaArea,
 			EngineDescription buildInfo)
 		{
+			owningCacheFile = cacheFile;
 			Load(values, reader, metaArea, buildInfo);
 		}
 
@@ -21,6 +22,8 @@ namespace Blamite.Blam.ThirdGen.Resources.Models
 		public BoundingBox[] BoundingBoxes { get; private set; }
 
 		public DatumIndex ModelResourceIndex { get; private set; }
+
+		private ICacheFile owningCacheFile = null;
 
 		private void Load(StructureValueCollection values, IReader reader, FileSegmentGroup metaArea,
 			EngineDescription buildInfo)
@@ -36,7 +39,7 @@ namespace Blamite.Blam.ThirdGen.Resources.Models
 			EngineDescription buildInfo)
 		{
 			var count = (int) values.GetInteger("number of regions");
-			uint address = (uint)values.GetInteger("region table address");
+			long address = (long)owningCacheFile.PointerExpander.Expand((uint)values.GetInteger("region table address"));
 			StructureLayout layout = buildInfo.Layouts.GetLayout("model region");
 			StructureValueCollection[] entries = TagBlockReader.ReadTagBlock(reader, count, address, layout, metaArea);
 

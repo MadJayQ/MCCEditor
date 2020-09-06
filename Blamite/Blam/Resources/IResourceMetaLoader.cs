@@ -30,10 +30,11 @@ namespace Blamite.Blam.Resources
 		/// </summary>
 		/// <param name="modeTag">The mode tag to load metadata from.</param>
 		/// <param name="reader">The reader to read the data with.</param>
+		/// <param name="cacheFile"> Input halo cache file </param>
 		/// <returns>An <see cref="IRenderModel" /> object holding the metadata in the tag. Can be null if loading failed.</returns>
 		/// <exception cref="ArgumentException">Thrown if modeTag points to null data or is not from the mode group.</exception>
 		/// <exception cref="NotSupportedException">Thrown if loading renderable model metadata is not supported.</exception>
-		IRenderModel LoadRenderModelMeta(ITag modeTag, IReader reader);
+		IRenderModel LoadRenderModelMeta(ITag modeTag, IReader reader, ICacheFile cacheFile);
 
 		/// <summary>
 		///     Loads metadata for a scenario BSP from an sbsp tag.

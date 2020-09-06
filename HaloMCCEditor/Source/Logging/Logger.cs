@@ -43,17 +43,17 @@ namespace HaloMCCEditor.Core.Logging
 
         public static void LogReport(string format, params object[] param)
         {
-            instance.ImplLogReport(format, param);
+            Instance.ImplLogReport(format, param);
         }
 
         public static void AssertMsg(bool condition, string message)
         {
-            instance.ImplAssertMsg(condition, message);
+            Instance.ImplAssertMsg(condition, message);
         }
 
         public static void AssertMsgFormat(bool condition, string message, params object[] param)
         {
-            instance.ImplAssertMsgFormat(condition, message, param);
+            Instance.ImplAssertMsgFormat(condition, message, param);
         }
     }
 }

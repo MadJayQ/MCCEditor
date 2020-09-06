@@ -144,6 +144,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Source\Blam\BlamCacheFile.cs" />
+    <Compile Include="Source\Blam\BlamModelRenderGeometry.cs" />
+    <Compile Include="Source\Blam\BlamRenderModel.cs" />
     <Compile Include="Source\EditorBrowser.cs">
       <SubType>Component</SubType>
     </Compile>

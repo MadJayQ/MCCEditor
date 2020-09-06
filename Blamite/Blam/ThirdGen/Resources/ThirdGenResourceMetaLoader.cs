@@ -30,7 +30,7 @@ namespace Blamite.Blam.ThirdGen.Resources
 			get { return _buildInfo.Layouts.HasLayout("render model"); }
 		}
 
-		public IRenderModel LoadRenderModelMeta(ITag modeTag, IReader reader)
+		public IRenderModel LoadRenderModelMeta(ITag modeTag, IReader reader, ICacheFile cacheFile)
 		{
 			if (modeTag.MetaLocation == null || modeTag.Group == null || modeTag.Group.Magic != ModeMagic)
 				throw new ArgumentException("modeTag does not point to metadata for a renderable model");
@@ -40,7 +40,7 @@ namespace Blamite.Blam.ThirdGen.Resources
 			reader.SeekTo(modeTag.MetaLocation.AsOffset());
 			var layout = _buildInfo.Layouts.GetLayout("render model");
 			var values = StructureReader.ReadStructure(reader, layout);
-			return new ThirdGenRenderModel(values, reader, _metaArea, _buildInfo);
+			return new ThirdGenRenderModel(values, reader, cacheFile, _metaArea, _buildInfo);
 		}
 
 		public bool SupportsScenarioBsps
