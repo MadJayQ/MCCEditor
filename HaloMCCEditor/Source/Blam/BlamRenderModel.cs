@@ -61,6 +61,8 @@ namespace HaloMCCEditor.Core.Blam
         public List<BlamRenderModelRegion> Regions { get; private set; }
         public BlamModelRenderGeometry Geometry { get; private set; }
 
+        public DatumIndex ResourceDatumIndex { get; private set; }
+
         private StructureValueCollection renderModelValues;
 
         public BlamRenderModel(ITag modelTag, BlamCacheFile cacheFile)
@@ -84,7 +86,10 @@ namespace HaloMCCEditor.Core.Blam
 
             StructureLayout modelRegionLayout = blamCacheFile.GetLayout("model region");
 
+            ResourceDatumIndex = new DatumIndex(renderModelValues.GetInteger("resource datum index"));
             Regions = new List<BlamRenderModelRegion>();
+
+            var x = blamCacheFile.Get().Resources.LoadResourceTable(blamCacheFile.Reader).Resources[ResourceDatumIndex.Index];
 
             for(ulong regionNum = 0ul; regionNum < numRegions; regionNum++)
             {
@@ -102,7 +107,16 @@ namespace HaloMCCEditor.Core.Blam
             ulong meshTableOffset = (ulong)blamCacheFile.PointerToFileOffset((uint)meshTableAddress);
 
             Geometry = new BlamModelRenderGeometry((RenderGeometryRuntimeFlags)runtimeGeometryFlags, meshTableOffset, numMeshes);
-            Geometry.Read(blamCacheFile);
+            var resources = blamCacheFile.Get().Resources.LoadResourceTable(blamCacheFile.Reader);
+
+            foreach(var res in resources.Resources)
+            {
+                ITag tag = res.ParentTag;
+                if (tag != modelTag) continue;
+
+                Geometry.Read(blamCacheFile, res);
+                break;
+            }
         }
     }
 }

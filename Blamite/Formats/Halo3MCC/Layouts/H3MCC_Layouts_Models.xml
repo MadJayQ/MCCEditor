@@ -12,7 +12,7 @@
 		<int32 name="number of bounding boxes" offset="0x74" />
 		<uint32 name="bounding box table address" offset="0x78" />
 
-		<uint32 name="resource datum index" offset="0xF8" />
+		<int32 name="resource datum index" offset="0xE0" />
 	</layout>
 
 	<!-- Block at 0xC in mode -->
@@ -30,32 +30,42 @@
 	</layout>
 
 	<!-- Block at 0x68 in mode -->
-	<layout for="model section" size="0x5C">
+	<layout for="model section" size="0x4C">
 		<int32 name="number of submeshes" offset="0x0" />
 		<uint32 name="submesh table address" offset="0x4" />
 		<int32 name="number of vertex groups" offset="0xC" />
 		<uint32 name="vertex group table address" offset="0x10" />
-		<byte name="vertex format" offset="0x2F" />
+		<int16 name="vertex buffer 1" offset="0x18" visible="true" />
+		<int16 name="vertex buffer 2" offset="0x1A" visible="true" />
+		<int16 name="vertex buffer 3" offset="0x1C" visible="true" />
+		<int16 name="vertex buffer 4" offset="0x1E" visible="true" />
+		<int16 name="vertex buffer 5" offset="0x20" visible="true" />
+		<int16 name="vertex buffer 6" offset="0x22" visible="true" />
+		<int16 name="vertex buffer 7" offset="0x24" visible="true" />
+		<int16 name="vertex buffer 8" offset="0x26" visible="true" />
+		<int16 name="index buffer 1" offset="0x28" visible="true" />
+		<int16 name="index buffer 2" offset="0x2A" visible="true" />
+		<byte name="vertex format" offset="0x2E" />
 		<byte name="extra elements per vertex" offset="0x30" />
 		<byte name="extra element type" offset="0x31" />
 	</layout>
 
 	<!-- Block at 0x0 in model section -->
-	<layout for="model submesh" size="0x18">
+	<layout for="model submesh" size="0x10">
 		<int16 name="shader index" offset="0x0" />
-		<int32 name="index buffer start" offset="0x4" />
-		<int32 name="index buffer count" offset="0x8" />
-		<int16 name="vertex group start" offset="0xC" />
-		<int16 name="vertex group count" offset="0xE" />
-		<int16 name="vertex buffer count" offset="0x14" />
+		<int16 name="index buffer start" offset="0x4" />
+		<int16 name="index buffer count" offset="0x6" />
+		<int16 name="subpart index" offset="0x8" />
+		<int16 name="subpart count" offset="0xA" />
+		<int16 name="vertex buffer count" offset="0xE" />
 	</layout>
 
 	<!-- Block at 0xC in model section -->
-	<layout for="model vertex group" size="0x10">
-		<int32 name="index buffer start" offset="0x0" />
-		<int32 name="index buffer count" offset="0x4" />
-		<int16 name="parent submesh index" offset="0x8" />
-		<int16 name="vertex buffer count" offset="0xA" />
+	<layout for="model vertex group" size="0x8">
+		<int16 name="index buffer start" offset="0x0" />
+		<int16 name="index buffer count" offset="0x2" />
+		<int16 name="parent submesh index" offset="0x4" />
+		<int16 name="vertex buffer count" offset="0x6" />
 	</layout>
 
 	<!-- Block at 0x74 in mode -->

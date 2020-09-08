@@ -1,7 +1,10 @@
-﻿using Blamite.IO;
+﻿using Blamite.Blam;
+using Blamite.Blam.Resources;
+using Blamite.IO;
 using Blamite.Serialization;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,8 +61,8 @@ namespace HaloMCCEditor.Core.Blam
         {
             public int SubmeshIdx { get; private set; }
             public Int16 ShaderIdx { get; private set; }
-            public Int32 IndexBufferStart { get; private set; }
-            public Int32 IndexBufferCount { get; private set; }
+            public Int16 IndexBufferStart { get; private set; }
+            public Int16 IndexBufferCount { get; private set; }
             public Int16 VertexGroupStart { get; private set; }
             public Int16 VertexGroupCount { get; private set; }
             public Int16 VertexBufferCount { get; private set; }
@@ -74,10 +77,10 @@ namespace HaloMCCEditor.Core.Blam
                 StructureValueCollection submeshValues = StructureReader.ReadStructure(reader, submeshLayout);
 
                 ShaderIdx = (Int16)submeshValues.GetInteger("shader index");
-                IndexBufferStart = (Int32)submeshValues.GetInteger("index buffer start");
-                IndexBufferCount = (Int32)submeshValues.GetInteger("index buffer count");
-                VertexGroupStart = (Int16)submeshValues.GetInteger("vertex group start");
-                VertexGroupCount = (Int16)submeshValues.GetInteger("vertex group count");
+                IndexBufferStart = (Int16)submeshValues.GetInteger("index buffer start");
+                IndexBufferCount = (Int16)submeshValues.GetInteger("index buffer count");
+                VertexGroupStart = (Int16)submeshValues.GetInteger("subpart index");
+                VertexGroupCount = (Int16)submeshValues.GetInteger("subpart count");
                 VertexBufferCount = (Int16)submeshValues.GetInteger("vertex buffer count");
             }
         }
@@ -108,6 +111,9 @@ namespace HaloMCCEditor.Core.Blam
         public int MeshIndex { get; private set; }
         public MeshVertexType VertexType { get; private set; }
 
+        public Int16[] VertexBufferIndices = new Int16[8];
+        public Int16[] IndexBufferIndices = new Int16[2];
+
         public BlamModelMesh(BlamCacheFile cacheFile, int index, StructureLayout meshLayout)
         {
             MeshIndex = index;
@@ -136,6 +142,18 @@ namespace HaloMCCEditor.Core.Blam
                 VertexGroups.Add(new BlamModelVertexGroup(vertexGroupTableOffset, i, cacheFile));
             }
             VertexType = (MeshVertexType)meshValueCollection.GetInteger("vertex format");
+
+            for(int i = 1; i <= VertexBufferIndices.Length; i++)
+            {
+                string indexerString = string.Format("vertex buffer {0}", i);
+                VertexBufferIndices[i - 1] = (Int16)meshValueCollection.GetInteger(indexerString);
+            }
+
+            for(int i = 1; i <= IndexBufferIndices.Length; i++)
+            {
+                string indexerString = string.Format("index buffer {0}", i);
+                IndexBufferIndices[i - 1] = (Int16)meshValueCollection.GetInteger(indexerString);
+            }
         }
     }
 
@@ -155,7 +173,22 @@ namespace HaloMCCEditor.Core.Blam
             meshTableOffset = (long)tableAddr;
         }
 
-        public void Read(BlamCacheFile cacheFile)
+        private void ReadResourceBuffers(BlamCacheFile cacheFile, ref Resource resourceRef)
+        {
+            bool[] convertedVertexBuffers = new bool[100];
+            bool[] convertedIndexBuffers = new bool[100];
+
+            StructureLayout layout = new StructureLayout();
+            layout.AddBasicField("number of vertex buffer definitions", StructureValueType.Int32, 0x18);
+            layout.AddBasicField("vertex buffer definition address", StructureValueType.UInt32, 0x1C);
+
+
+            long offset = cacheFile.PointerToFileOffset((uint)cacheFile.ExpandPointer((uint)resourceRef.BaseDefinitionAddress));
+            cacheFile.Reader.SeekTo(offset);
+            StructureValueCollection valueCollection = StructureReader.ReadStructure(cacheFile.Reader, layout);
+        }
+
+        public void Read(BlamCacheFile cacheFile, Resource resourceRef)
         {
             IReader reader = cacheFile.Reader;
             StructureLayout meshLayout = cacheFile.GetLayout("model section");
@@ -165,6 +198,8 @@ namespace HaloMCCEditor.Core.Blam
                 reader.SeekTo(meshTableOffset + (i * meshLayout.Size));
                 Meshes.Add(new BlamModelMesh(cacheFile, i, meshLayout));
             }
+
+            ReadResourceBuffers(cacheFile, ref resourceRef);
         }
     }
 }

@@ -18,7 +18,8 @@ namespace HaloMCCEditor.Source.UnitTests
 {
     public static class EditorUnitTests
     {
-        private const string TARGET_MAP_FILE = "F:\\Games\\Steam\\steamapps\\common\\Halo The Master Chief Collection\\halo3\\maps\\warehouse.map";
+        //private const string TARGET_MAP_FILE = "F:\\Games\\Steam\\steamapps\\common\\Halo The Master Chief Collection\\halo3\\maps\\warehouse.map";
+        private const string TARGET_MAP_FILE = "C:\\Users\\NASCARAdmin\\Documents\\GitHub\\MCCEditor\\Maps\\warehouse.map";
         private const string TARGET_MODEL = "objects\\vehicles\\warthog\\warthog";
         private static void MapLoadUnitTest()
         {
