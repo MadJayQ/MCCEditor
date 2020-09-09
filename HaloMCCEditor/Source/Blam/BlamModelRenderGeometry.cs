@@ -5,10 +5,13 @@ using Blamite.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Animation;
+
+using HaloMCCEditor.Core.Logging;
 
 namespace HaloMCCEditor.Core.Blam
 {
@@ -173,19 +176,73 @@ namespace HaloMCCEditor.Core.Blam
             meshTableOffset = (long)tableAddr;
         }
 
+        private byte[] ReadResourcePageData(BlamCacheFile cacheFile, ResourcePage page)
+        {
+            BlamCacheFile cache = cacheFile;
+            string cacheFilePath = "";
+            bool cleanup = false;
+            if(page.FilePath != null)
+            {
+                cacheFilePath = Util.VisualStudioProvider.TryGetSolutionDirectoryInfo().FullName + "\\" + page.FilePath;
+                cleanup = true;
+                cache = new BlamCacheFile(cacheFilePath);
+            }
+
+            byte[] decompressed = new byte[page.UncompressedSize];
+            cacheFile.Reader.SeekTo(page.Offset);
+
+            byte[] compressed = cacheFile.Reader.ReadBlock(page.CompressedSize);
+
+            if(page.CompressionMethod == ResourcePageCompression.None)
+            {
+                decompressed = compressed;
+            }
+            else if(page.CompressionMethod == ResourcePageCompression.Deflate)
+            {
+                using (DeflateStream stream = new DeflateStream(new MemoryStream(compressed), CompressionMode.Decompress))
+                    stream.Read(decompressed, 0, BitConverter.ToInt32(BitConverter.GetBytes(page.UncompressedSize), 0));
+            }
+
+
+            if(cleanup)
+            {
+                cache.Dispose();
+            }
+
+            return decompressed;
+        }
+
         private void ReadResourceBuffers(BlamCacheFile cacheFile, ref Resource resourceRef)
         {
             bool[] convertedVertexBuffers = new bool[100];
             bool[] convertedIndexBuffers = new bool[100];
 
-            StructureLayout layout = new StructureLayout();
-            layout.AddBasicField("number of vertex buffer definitions", StructureValueType.Int32, 0x18);
-            layout.AddBasicField("vertex buffer definition address", StructureValueType.UInt32, 0x1C);
+            using(EndianWriter writer = new EndianWriter(new MemoryStream(resourceRef.Info), Endian.LittleEndian))
+            {
+                foreach (ResourceFixup fixup in resourceRef.ResourceFixups)
+                {
+                    BlamCacheAddress address = new BlamCacheAddress(fixup.Address);
+                    writer.SeekTo(fixup.Offset);
+                    writer.WriteUInt32(address.Value);
+                }
+            }
 
+            byte[] primaryResource = ReadResourcePageData(cacheFile, resourceRef.Location.PrimaryPage);
+            byte[] secondaryResource = ReadResourcePageData(cacheFile, resourceRef.Location.SecondaryPage);
 
-            long offset = cacheFile.PointerToFileOffset((uint)cacheFile.ExpandPointer((uint)resourceRef.BaseDefinitionAddress));
-            cacheFile.Reader.SeekTo(offset);
-            StructureValueCollection valueCollection = StructureReader.ReadStructure(cacheFile.Reader, layout);
+            using(EndianReader definitionReader = new EndianReader(new MemoryStream(resourceRef.Info), Endian.LittleEndian))
+            using(EndianReader primaryReader = new EndianReader(new MemoryStream(primaryResource), Endian.LittleEndian))
+            using(EndianReader secondaryReader = new EndianReader(new MemoryStream(secondaryResource), Endian.LittleEndian))
+            {
+                BlamCacheAddress cacheAddress = new BlamCacheAddress((uint)resourceRef.BaseDefinitionAddress);
+                Logger.AssertMsg(cacheAddress.Type == BlamCacheAddressType.Definition, "INVALID CACHE ADDRESS");
+                definitionReader.SeekTo(cacheAddress.Offset);
+                StructureLayout layout = cacheFile.GetLayout("render geometry api resource definition");
+                StructureValueCollection values = StructureReader.ReadStructure(definitionReader, layout);
+
+                BlamCacheAddress uselessCrap3Address = new BlamCacheAddress((uint)values.GetInteger("address of useless crap3"));
+                BlamCacheAddress uselessCrap4Address = new BlamCacheAddress((uint)values.GetInteger("address of useless crap4"));
+            }
         }
 
         public void Read(BlamCacheFile cacheFile, Resource resourceRef)

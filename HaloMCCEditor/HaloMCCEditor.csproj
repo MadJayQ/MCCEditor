@@ -143,6 +143,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Source\Blam\BlamCacheAddress.cs" />
     <Compile Include="Source\Blam\BlamCacheFile.cs" />
     <Compile Include="Source\Blam\BlamModelRenderGeometry.cs" />
     <Compile Include="Source\Blam\BlamRenderGeometryApiResourceDefinition.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Source\Rendering\OpenGLNativeRenderer.cs" />
     <Compile Include="Source\Rendering\RenderAPIImpl.cs" />
     <Compile Include="Source\UnitTests\EditorUnitTests.cs" />
+    <Compile Include="Source\Util\VisualStudioProvider.cs" />
     <Compile Include="Source\ViewportHostControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
