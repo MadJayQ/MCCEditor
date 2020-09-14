@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HaloMCCEditor.Source.Blam
+namespace HaloMCCEditor.Core.Blam.Resources
 {
-    public class BlamRenderGeometryApiResourceDefinition
+    public class IndexBufferDefinition
     {
-
     }
 }
