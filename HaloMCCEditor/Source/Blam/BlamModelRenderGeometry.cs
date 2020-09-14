@@ -213,6 +213,7 @@ namespace HaloMCCEditor.Core.Blam
             return decompressed;
         }
 
+
         private void ReadResourceBuffers(BlamCacheFile cacheFile, ref Resource resourceRef)
         {
             bool[] convertedVertexBuffers = new bool[100];
@@ -316,6 +317,7 @@ namespace HaloMCCEditor.Core.Blam
                     byte[] vertexBlock = vertexBufferReader.ReadBlock((int)vertexBufferDefinitionValues.GetInteger("vertex buffer size"));
                     using(EndianReader vertexBufferStreamReader = new EndianReader(new MemoryStream(vertexBlock), Endian.LittleEndian))
                     {
+                        
                         for(int vertexIdx = 0; vertexIdx < vertexCount; vertexIdx++)
                         {
                             long vertexBlockOffset = (vertexIdx * vertexByteSize);

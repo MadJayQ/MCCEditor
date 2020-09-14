@@ -69,7 +69,8 @@
 	</layout>
 
 	<!-- Block at 0x74 in mode -->
-	<layout for="model bounding box" size="0x34">
+	<layout for="model bounding box" size="0x2C">
+		<uint16 name="compression flags" offset = "0x0" />
 		<float32 name="min x" offset="0x4" />
 		<float32 name="max x" offset="0x8" />
 		<float32 name="min y" offset="0xC" />

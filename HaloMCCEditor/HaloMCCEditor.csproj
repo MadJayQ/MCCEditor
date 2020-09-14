@@ -145,6 +145,7 @@
     </ApplicationDefinition>
     <Compile Include="Source\Blam\BlamCacheAddress.cs" />
     <Compile Include="Source\Blam\BlamCacheFile.cs" />
+    <Compile Include="Source\Blam\BlamModelCompression.cs" />
     <Compile Include="Source\Blam\BlamModelRenderGeometry.cs" />
     <Compile Include="Source\Blam\BlamRenderGeometryApiResourceDefinition.cs" />
     <Compile Include="Source\Blam\BlamRenderModel.cs" />

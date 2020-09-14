@@ -60,6 +60,7 @@ namespace HaloMCCEditor.Core.Blam
         }
         public List<BlamRenderModelRegion> Regions { get; private set; }
         public BlamModelRenderGeometry Geometry { get; private set; }
+        public BlamModelCompression Compression { get; private set; }
 
         public DatumIndex ResourceDatumIndex { get; private set; }
 
@@ -69,6 +70,26 @@ namespace HaloMCCEditor.Core.Blam
         {
             LoadRegions(modelTag, cacheFile);
             LoadRenderGeometry(modelTag, cacheFile);
+            LoadModelCompressionData(modelTag, cacheFile);
+        }
+
+        private void LoadModelCompressionData(ITag modelTag, BlamCacheFile blamCacheFile)
+        {
+            ulong numBoundingBoxes = renderModelValues.GetInteger("number of bounding boxes");
+            ulong boundingBoxTableAddr = renderModelValues.GetInteger("bounding box table address");
+            ulong boundingboxTableOffset = (ulong)blamCacheFile.PointerToFileOffset((uint)boundingBoxTableAddr);
+
+            StructureLayout boundingBoxElementLayout = blamCacheFile.GetLayout("model bounding box");
+
+            Compression = new BlamModelCompression();
+            List<StructureValueCollection> boundingBoxTableData = new List<StructureValueCollection>((int)numBoundingBoxes);
+            for(ulong i = 0; i < numBoundingBoxes; i++)
+            {
+                ulong offset = (i * (ulong)boundingBoxElementLayout.Size);
+                blamCacheFile.Reader.SeekTo((long)(boundingboxTableOffset + offset));
+                boundingBoxTableData.Add(StructureReader.ReadStructure(blamCacheFile.Reader, boundingBoxElementLayout));
+            }
+            Compression.ReadCompressionData(boundingBoxTableData);
         }
 
         private void LoadRegions(ITag modelTag, BlamCacheFile blamCacheFile)
