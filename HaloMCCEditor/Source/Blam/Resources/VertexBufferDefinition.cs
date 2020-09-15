@@ -8,5 +8,6 @@ namespace HaloMCCEditor.Core.Blam.Resources
 {
     public class VertexBufferDefinition
     {
+
     }
 }

@@ -147,8 +147,14 @@
     <Compile Include="Source\Blam\BlamCacheFile.cs" />
     <Compile Include="Source\Blam\BlamModelCompression.cs" />
     <Compile Include="Source\Blam\BlamModelRenderGeometry.cs" />
-    <Compile Include="Source\Blam\BlamRenderGeometryApiResourceDefinition.cs" />
     <Compile Include="Source\Blam\BlamRenderModel.cs" />
+    <Compile Include="Source\Blam\Resources\BlamD3DPointer.cs" />
+    <Compile Include="Source\Blam\Resources\BlamRenderGeometryApiResourceDefinition.cs" />
+    <Compile Include="Source\Blam\Resources\BlamTagResource.cs" />
+    <Compile Include="Source\Blam\Resources\IndexBufferDefinition.cs" />
+    <Compile Include="Source\Blam\Resources\VertexBufferDefinition.cs" />
+    <Compile Include="Source\Blam\Serialization\BlamCacheFileStructure.cs" />
+    <Compile Include="Source\Blam\Serialization\BlamStructureElementAttribute.cs" />
     <Compile Include="Source\EditorBrowser.cs">
       <SubType>Component</SubType>
     </Compile>

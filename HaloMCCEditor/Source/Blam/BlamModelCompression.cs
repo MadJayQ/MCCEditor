@@ -41,7 +41,6 @@ namespace HaloMCCEditor.Core.Blam
                 CompressionBoundingBox.MaxU = elementData.GetFloat("max u");
                 CompressionBoundingBox.MinV = elementData.GetFloat("min v");
                 CompressionBoundingBox.MaxV = elementData.GetFloat("max z");
-
             }
         }
 

@@ -1,9 +1,11 @@
 ﻿using Blamite.Blam;
+using Blamite.Blam.Resources;
 using Blamite.Blam.ThirdGen;
 using Blamite.Blam.ThirdGen.Structures;
 using Blamite.IO;
 using Blamite.Serialization;
 using Blamite.Serialization.Settings;
+using HaloMCCEditor.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,6 +23,21 @@ namespace HaloMCCEditor.Core.Blam
             string buildString = cacheFileVersion.BuildString;
 
             return new ThirdGenCacheFile(inputReader, buildInfo, buildString);
+        }
+
+
+        private ResourceTable resourceTable;
+        public ResourceTable ResourceTable 
+        { 
+            get 
+            {
+                if(resourceTable == null)
+                {
+                    Logger.AssertMsg(Reader.BaseStream != null, "Cannot read resource table because no valid file stream exists!");
+                }
+                resourceTable = Get().Resources.LoadResourceTable(Reader);
+                return resourceTable;
+            } 
         }
 
         public IReader Reader { get { return fileStream; } }

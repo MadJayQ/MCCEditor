@@ -128,7 +128,7 @@ namespace HaloMCCEditor.Core.Blam
             ulong meshTableOffset = (ulong)blamCacheFile.PointerToFileOffset((uint)meshTableAddress);
 
             Geometry = new BlamModelRenderGeometry((RenderGeometryRuntimeFlags)runtimeGeometryFlags, meshTableOffset, numMeshes);
-            var resources = blamCacheFile.Get().Resources.LoadResourceTable(blamCacheFile.Reader);
+            var resources = blamCacheFile.ResourceTable;
 
             foreach(var res in resources.Resources)
             {
